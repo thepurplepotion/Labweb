@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web App</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 50px;
+        }
+        img {
+            max-width: 500px;
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Измените порядок цветов</h1>
+        <form method="post">
+            <select name="order">
+                <option value="rbg">rbg</option>
+                <option value="grb">grb</option>
+                <option value="gbr">gbr</option>
+                <option value="bgb">bgb</option>
+                <option value="bgr">bgr</option>
+            </select>
+            <button type="submit">Применить</button>
+            <button type="submit" name="order" value="rgb">Сброс</button>
+        </form>
+        <h2>Результат</h2>
+        <img src="data:image/jpeg;base64,{{ original_img }}" alt="Result Image">
+        <h2>Графики</h2>
+        <img src="data:image/png;base64,{{ graphs[0] }}" alt="Graph 1">
+    </div>
+</body>
+</html>
