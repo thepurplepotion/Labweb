@@ -1,12 +1,14 @@
-version: '{build}-beta'
+version: 1.0.{build}
 
-pull_request_title: 'PR-{pullRequestId}'
+pull_request_matrix:
+  - branch: main
+    config:
+      PULL_REQUEST_NUMBER: $env:APPVEYOR_PULL_REQUEST_NUMBER
 
 init:
-  - cmd: choco install python
+  - ps: Install-Product node 16
 
 install:
-  - ps: Install-Product node 16
   - ps: npm install -g standard
   - ps: npm install
   - ps: python -m pip install --upgrade pip
