@@ -1,0 +1,45 @@
+version: 1.0.{build}
+
+clone_depth: 5
+
+environment:
+  MY_ENVIRONMENT_VARIABLE: true
+
+install:
+  - ps: Install-PackageProvider -Name chocolatey -Force
+  - ps: choco install python -y
+  - ps: refreshenv
+  - python -m pip install --upgrade pip setuptools wheel
+  - python -m pip install -r requirements.txt
+
+before_build:
+  - ps: python -m venv env
+  - ps: ./env/Scripts/activate.ps1
+  - python setup.py develop
+
+build:
+  verbosity: normal
+
+test_script:
+  - python -m unittest discover tests
+
+after_build:
+  - ps: deactivate
+
+deploy:
+  - provider: GitHub
+    release: $(APPVEYOR_RELEASENAME)
+    description: "Deploying $(APPVEYOR_PROJECT_NAME) version $(APPVEYOR_BUILD_VERSION)"
+    auth_token:
+      secure: YourSecureToken
+    artifact: MyArtifact.zip
+    draft: false
+    prerelease: false
+    on:
+      branch: develop
+
+on_success:
+  - ps: Write-Host "Successful build!"
+
+on_failure:
+  - ps: Write-Host "Failed build!"
