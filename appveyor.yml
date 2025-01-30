@@ -1,52 +1,50 @@
-version: 1.0.{build}
+version: '{build}-beta'
 
-clone_depth: 5
+pull_request_title: 'PR-{pullRequestId}'
 
-environment:
-  matrix:
-    - PYTHON: "C:\\Python313\\python.exe"
+init:
+  - cmd: choco install python
 
 install:
-  - ps: Install-PackageProvider -Name chocolatey -Force
-  - ps: choco install python -y
-  - ps: refreshenv
-  - ps: python -m pip install --upgrade pip setuptools wheel
+  - ps: Install-Product node 16
+  - ps: npm install -g standard
+  - ps: npm install
+  - ps: python -m pip install --upgrade pip
   - ps: python -m pip install -r requirements.txt
 
-before_build:
-  - ps: python -m venv env
-  - ps: ./env/Scripts/activate.ps1
-  - ps: python setup.py develop
-
-build:
-  verbosity: normal
+build_script:
+  - ps: npm test
+  - ps: python setup.py sdist bdist_wheel
 
 test_script:
-  - ps: &run_tests
-      pytest --cov=myproject tests
-  - ps: coverage xml
+  - ps: Invoke-WebRequest https://bootstrap.pypa.io/get-pip.py -OutFile get-pip.py
+  - ps: python get-pip.py
+  - ps: python -m pip install virtualenv
+  - ps: virtualenv venv
+  - ps: .\venv\Scripts\activate.ps1
+  - ps: python -m pip install -r requirements.txt
+  - ps: pytest
 
 after_build:
-  - ps: deactivate
+  - ps: cp dist/* .
 
 artifacts:
-  - path: myproject.egg-info\Source\coverage\coverage.xml
-    name: Coverage Report
+  - path: .\dist\*.whl
+    name: wheels
+  - path: .\dist\*.tar.gz
+    name: source
 
 deploy:
-  - provider: GitHub
-    release: $(APPVEYOR_RELEASENAME)
-    description: "Deploying $(APPVEYOR_PROJECT_NAME) version $(APPVEYOR_BUILD_VERSION)"
-    auth_token:
-      secure: YourSecureToken
-    artifact: MyArtifact.zip
-    draft: false
-    prerelease: false
-    on:
-      branch: develop
+  - provider: TestPywinauto
+    artifact: wheels
+    script: py -m pip install --upgrade pip
+           py -m pip install --force-reinstall --no-index --find-links=. wheels\*
+           py -m pytest
+  - provider: SimpleHTTP
+    artifact: source
+    script: echo "No deployment actions required."
 
-on_success:
-  - ps: Write-Host "Successful build!"
-
-on_failure:
-  - ps: Write-Host "Failed build!"
+branches:
+  only:
+    - main
+    - beta
