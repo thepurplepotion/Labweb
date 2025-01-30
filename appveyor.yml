@@ -3,28 +3,35 @@ version: 1.0.{build}
 clone_depth: 5
 
 environment:
-  MY_ENVIRONMENT_VARIABLE: true
+  matrix:
+    - PYTHON: "C:\\Python313\\python.exe"
 
 install:
   - ps: Install-PackageProvider -Name chocolatey -Force
   - ps: choco install python -y
   - ps: refreshenv
-  - python -m pip install --upgrade pip setuptools wheel
-  - python -m pip install -r requirements.txt
+  - ps: python -m pip install --upgrade pip setuptools wheel
+  - ps: python -m pip install -r requirements.txt
 
 before_build:
   - ps: python -m venv env
   - ps: ./env/Scripts/activate.ps1
-  - python setup.py develop
+  - ps: python setup.py develop
 
 build:
   verbosity: normal
 
 test_script:
-  - python -m unittest discover tests
+  - ps: &run_tests
+      pytest --cov=myproject tests
+  - ps: coverage xml
 
 after_build:
   - ps: deactivate
+
+artifacts:
+  - path: myproject.egg-info\Source\coverage\coverage.xml
+    name: Coverage Report
 
 deploy:
   - provider: GitHub
