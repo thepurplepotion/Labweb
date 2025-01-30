@@ -1,46 +1,36 @@
 version: 1.0.{build}
 
-init:
-  - ps: Install-Product node 16
+environment:
+  matrix:
+    - PIP_INDEX_URL: https://pypi.python.org/simple
+      PIP_EXTRA_INDEX_URL: https://my-extra-pypi
+      PYTHON: "C:\\Python39\\python.exe"
+    - PIP_INDEX_URL: https://pypi.python.org/simple
+      PIP_EXTRA_INDEX_URL: https://my-extra-pypi
+      PYTHON: "C:\\Python38\\python.exe"
 
 install:
-  - ps: npm install -g standard
-  - ps: npm install
-  - ps: python -m pip install --upgrade pip
-  - ps: python -m pip install -r requirements.txt
+  - "%PYTHON%" -m pip install --upgrade pip setuptools wheel
+  - "%PYTHON%" -m pip install -r requirements.txt
 
 build_script:
-  - ps: npm test
-  - ps: python setup.py sdist bdist_wheel
+  - "%PYTHON%" setup.py sdist bdist_wheel
 
 test_script:
-  - ps: Invoke-WebRequest https://bootstrap.pypa.io/get-pip.py -OutFile get-pip.py
-  - ps: python get-pip.py
-  - ps: python -m pip install virtualenv
-  - ps: virtualenv venv
-  - ps: .\venv\Scripts\activate.ps1
-  - ps: python -m pip install -r requirements.txt
-  - ps: pytest
+  - "%PYTHON%" -m pip install -r tests/requirements.txt
+  - pytest
 
-after_build:
-  - ps: cp dist/* .
+after_test:
+  - "%PYTHON%" -m pip install coveralls
+  - coveralls
 
 artifacts:
-  - path: .\dist\*.whl
+  - path: dist/*
     name: wheels
-  - path: .\dist\*.tar.gz
-    name: source
 
 deploy:
-  - provider: TestPywinauto
-    artifact: wheels
-    script: py -m pip install --upgrade pip
-           py -m pip install --force-reinstall --no-index --find-links=. wheels\*
-           py -m pytest
-  - provider: SimpleHTTP
-    artifact: source
-    script: echo "No deployment actions required."
-
-branches:
-  only:
-    - main
+  provider: PyPI
+  distribution: sdist
+  skip_existing: true
+  on:
+    branch: main
