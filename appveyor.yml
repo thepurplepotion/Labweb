@@ -10,7 +10,7 @@ environment:
       PYTHON: "C:\\Python38\\python.exe"
 
 install:
-  - python.exe -m pip install --upgrade pip setuptools wheel
+  - python.exe -m pip install --upgrade pip
   - python.exe -m pip install -r requirements.txt
 
 build_script:
