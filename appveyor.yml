@@ -9,6 +9,14 @@ init:
   - ps: Install-Product node 16
 
 install:
+  - ps: |
+      # Установка Python
+      If (-Not (Test-Path -Path "$env:USERPROFILE\.virtualenvs")) {
+        New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.virtualenvs"
+      }
+      &{$Branch='dev'; choco install python --version $Branch.}
+    Name: Python
+
   - ps: npm install -g standard
   - ps: npm install
   - ps: python -m pip install --upgrade pip
