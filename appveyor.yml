@@ -10,18 +10,18 @@ environment:
       PYTHON: "C:\\Python38\\python.exe"
 
 install:
-  - "%PYTHON%" -m pip install --upgrade pip setuptools wheel
-  - "%PYTHON%" -m pip install -r requirements.txt
+  - pyhton.exe -m pip install --upgrade pip setuptools wheel
+  - pyhton.exe -m pip install -r requirements.txt
 
 build_script:
-  - "%PYTHON%" setup.py sdist bdist_wheel
+  - pyhton.exe setup.py sdist bdist_wheel
 
 test_script:
-  - "%PYTHON%" -m pip install -r tests/requirements.txt
+  - pyhton.exe -m pip install -r tests/requirements.txt
   - pytest
 
 after_test:
-  - "%PYTHON%" -m pip install coveralls
+  - pyhton.exe -m pip install coveralls
   - coveralls
 
 artifacts:
